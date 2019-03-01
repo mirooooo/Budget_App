@@ -13,6 +13,14 @@ const budgetCotroller = (function () {
         this.value = value;
     };
 
+    const calculateTotal = (type) => {
+        var sum = 0;
+        data.allItems[type].forEach(cur => {
+            sum += cur.value;
+        });
+        data.totals[type] = sum;
+    }
+
 
     var data = {
         allItems: {
@@ -22,7 +30,9 @@ const budgetCotroller = (function () {
         totals: {
             exp: 0,
             inc: 0
-        }
+        },
+        budget: 0,
+        percentage: -1
     };
 
     return {
@@ -48,9 +58,40 @@ const budgetCotroller = (function () {
             // Return the new elemnt 
             return newItem;
          },
+
+         calculateBudget: function() { 
+
+            // calculate total income and expenses 
+            calculateTotal('inc');
+            calculateTotal('exp');
+            
+            // Calculate the budget: income - expenses
+            data.budget = data.totals.inc - data.totals.exp;
+
+
+            // calculate the % of income that we spent 
+            if (data.totals.inc > 0) {
+                data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+            } else {
+                data.percentage = -1;
+            }
+
+          },
+
+          getBUdget() {
+              return {
+                   budget: data.budget,
+                   totalInc: data.totals.inc,
+                   totalExp: data.totals.exp,
+                   persentage: data.percentage
+              }
+          },
+
+
+
             testing: function () {
             console.log(data);
-        }
+        },
     };
  })();
 
@@ -142,14 +183,21 @@ const controller = (function (budgetCtrl, UIctrl) {
         });
     };
 
+
     const updateBudget = () => {
         
         // 1. Calculate Budget
+        budgetCtrl.calculateBudget();
 
         // 2. Return the budget
+        var budget = budgetCtrl.getBUdget();
 
         // 3. Display the budget on the UI
+        console.log(budget);
+        
     };
+
+
 
     const ctrlAddItem = function () { 
         var input, newItem;
